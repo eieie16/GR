@@ -1,0 +1,7 @@
+name = "grimward-rp"
+pages_build_output_dir = "/"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "grimward-db"
+database_id = "你的数据库ID"   # 暂留空，部署时在 Pages 仪表盘绑定即可
