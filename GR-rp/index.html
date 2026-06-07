@@ -2,307 +2,857 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grimward RolePlay - 硬核角色扮演社区</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Grimward RolePlay - 硬核社区</title>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@14.0.0/dist/umd/index.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Montserrat', sans-serif; background: #0a0a0a; color: #fff; overflow-x: hidden; }
-        .btn-primary { background: linear-gradient(135deg, #f27128, #d85f1a); color: #fff; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 700; cursor: pointer; }
-        .btn-primary:hover { transform: scale(1.02); box-shadow: 0 4px 15px rgba(242,113,40,0.4); }
-        .btn-danger { background: #cc3333; color: #fff; border: none; padding: 6px 14px; border-radius: 4px; cursor: pointer; }
-        .btn-secondary { background: #444; color: #fff; border: none; padding: 6px 14px; border-radius: 4px; cursor: pointer; }
-        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 15px 40px; position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; background: rgba(10,10,10,0.85); backdrop-filter: blur(8px); flex-wrap: wrap; gap: 10px; }
-        .logo-icon { font-size: 28px; font-weight: 800; background: linear-gradient(135deg, #ff5e62, #ff9966, #00b4db); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .logo-text { font-size: 20px; font-weight: 700; color: #4dd0e1; }
-        .nav-links { display: flex; list-style: none; gap: 20px; flex-wrap: wrap; }
-        .nav-links li a { text-decoration: none; color: #e0e0e0; font-size: 14px; font-weight: 500; cursor: pointer; position: relative; }
-        .nav-links li a:after { content: ''; position: absolute; width: 0; height: 2px; bottom: -4px; left: 0; background: #f27128; transition: width 0.3s; }
-        .nav-links li a.active:after, .nav-links li a:hover:after { width: 100%; }
-        .auth-container { display: flex; gap: 10px; align-items: center; }
-        .auth-btn { background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #e0e0e0; padding: 6px 14px; border-radius: 4px; cursor: pointer; }
-        .auth-btn.primary { background: #f27128; border-color: #f27128; }
-        .user-greeting { display: none; align-items: center; gap: 8px; }
-        .user-greeting.visible { display: flex; }
-        .modal-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; }
-        .modal-overlay.open { display: flex; }
-        .auth-modal { background: #1a1a1a; width: 380px; padding: 30px; border-radius: 12px; border: 1px solid #333; position: relative; }
-        .close-modal { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: #888; }
-        .form-group { margin-bottom: 15px; }
-        .form-group input { width: 100%; padding: 10px; background: #2a2a2a; border: 1px solid #444; border-radius: 6px; color: #fff; }
-        .auth-submit-btn { width: 100%; padding: 12px; background: #f27128; color: #fff; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; }
-        .page-section { display: none; min-height: 100vh; padding-top: 80px; }
-        .page-section.active { display: flex; flex-direction: column; align-items: center; }
-        #home-page { background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=1600'); background-size: cover; justify-content: center; text-align: center; }
-        .home-title { font-size: 80px; font-weight: 900; background: linear-gradient(135deg, #fff, #e0e0e0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .beijing-time, .online-count { display: inline-block; background: rgba(0,0,0,0.5); padding: 8px 20px; border-radius: 20px; margin: 10px; }
-        .chat-toggle { position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; background: linear-gradient(135deg,#f27128,#d85f1a); border-radius: 50%; border: none; color: #fff; font-size: 28px; cursor: pointer; z-index: 5000; }
-        .chat-container { position: fixed; bottom: 100px; right: 25px; width: 380px; max-height: 500px; background: #1a1a1a; border-radius: 16px; display: none; flex-direction: column; z-index: 4999; }
-        .chat-container.open { display: flex; }
-        .chat-messages { flex:1; padding: 12px; overflow-y: auto; max-height: 320px; background: #121212; }
-        .chat-msg-item { background: #1f1f1f; margin-bottom: 10px; padding: 8px; border-radius: 8px; border-left: 3px solid #f27128; }
-        .chat-input-area { display: flex; gap: 8px; padding: 10px; background: #1f1f1f; }
-        .chat-input-area input { flex:1; padding: 8px; background: #2a2a2a; border: none; border-radius: 6px; color: #fff; }
-        @media (max-width: 768px) { .home-title { font-size: 50px; } .chat-container { width: 90%; right: 5%; } }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0b0b0f;
+            color: #ededee;
+            line-height: 1.5;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            background: rgba(10, 10, 15, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.6rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #f97316, #f59e0b);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .logo i {
+            font-size: 1.8rem;
+            color: #f97316;
+            background: none;
+            -webkit-background-clip: unset;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.8rem;
+            list-style: none;
+        }
+
+        .nav-links li {
+            cursor: pointer;
+            font-weight: 500;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-links li:hover {
+            color: #f97316;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            border: none;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #f97316, #f59e0b);
+            color: white;
+            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(249, 115, 22, 0.4);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ededee;
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: #f97316;
+        }
+
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+
+        /* 页面容器 */
+        .page {
+            display: none;
+            padding: 2rem;
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        .page.active-page {
+            display: block;
+        }
+
+        /* 卡片通用样式 */
+        .card {
+            background: rgba(20, 20, 28, 0.7);
+            backdrop-filter: blur(4px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            transition: 0.2s;
+        }
+
+        .card:hover {
+            border-color: rgba(249, 115, 22, 0.4);
+            transform: translateY(-4px);
+        }
+
+        /* 首页 */
+        .hero {
+            text-align: center;
+            padding: 4rem 1rem;
+            background: radial-gradient(circle at 30% 10%, rgba(249,115,22,0.15), transparent);
+            border-radius: 48px;
+            margin-bottom: 2rem;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff, #f97316);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 1rem;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+
+        .stat-badge {
+            background: rgba(0,0,0,0.5);
+            padding: 0.5rem 1.2rem;
+            border-radius: 40px;
+            font-size: 0.9rem;
+            backdrop-filter: blur(4px);
+        }
+
+        /* 商城网格 */
+        .shop-grid, .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .shop-card {
+            background: #1a1a22;
+            border-radius: 24px;
+            padding: 1.5rem;
+            transition: 0.2s;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .shop-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .price-tag {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #fbbf24;
+            margin: 1rem 0;
+        }
+
+        /* 聊天浮动窗口 */
+        .chat-float {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 200;
+        }
+
+        .chat-toggle {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #f97316, #f59e0b);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            transition: 0.2s;
+        }
+
+        .chat-toggle:hover {
+            transform: scale(1.05);
+        }
+
+        .chat-window {
+            position: fixed;
+            bottom: 96px;
+            right: 24px;
+            width: 360px;
+            background: #18181e;
+            border-radius: 24px;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 20px 35px rgba(0,0,0,0.5);
+        }
+
+        .chat-window.open {
+            display: flex;
+        }
+
+        .chat-header {
+            padding: 12px 16px;
+            background: #20202a;
+            display: flex;
+            justify-content: space-between;
+            font-weight: 600;
+        }
+
+        .chat-messages {
+            height: 320px;
+            overflow-y: auto;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .message {
+            background: #25252e;
+            border-radius: 18px;
+            padding: 8px 14px;
+            max-width: 85%;
+            align-self: flex-start;
+        }
+
+        .message .name {
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: #f97316;
+        }
+
+        .chat-input-area {
+            display: flex;
+            padding: 12px;
+            gap: 8px;
+            border-top: 1px solid #2a2a33;
+        }
+
+        .chat-input-area input {
+            flex: 1;
+            background: #2a2a33;
+            border: none;
+            padding: 10px;
+            border-radius: 40px;
+            color: white;
+        }
+
+        /* 管理员表格 */
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .admin-table th, .admin-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #2a2a33;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: #1e1e26;
+            padding: 2rem;
+            border-radius: 32px;
+            width: 360px;
+            max-width: 90%;
+        }
+
+        input, select, textarea {
+            background: #2a2a33;
+            border: 1px solid #3a3a45;
+            padding: 10px 14px;
+            border-radius: 16px;
+            color: white;
+            width: 100%;
+            margin: 8px 0;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .nav-links {
+                justify-content: center;
+            }
+            .hero h1 {
+                font-size: 2rem;
+            }
+        }
     </style>
 </head>
 <body>
-<div id="maintenance-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; justify-content:center; align-items:center; flex-direction:column;"><h1>🔧 维护中</h1><p id="maintenance-msg"></p></div>
+
 <nav class="navbar">
-    <div class="logo-area"><span class="logo-icon">GR</span><div class="logo-text">Grimward <span>RolePlay</span></div></div>
+    <div class="logo"><i class="fas fa-dragon"></i> Grimward RP</div>
     <ul class="nav-links">
-        <li><a class="active" onclick="showPage('home')">首页</a></li>
-        <li><a onclick="showPage('announcement')">公告</a></li>
-        <li><a onclick="showPage('server-details')">服务器详情</a></li>
-        <li><a onclick="showPage('rules')">规则与条例</a></li>
-        <li><a onclick="showPage('team')">管理团队</a></li>
-        <li><a onclick="showPage('shop')">商城</a></li>
-        <li><a onclick="showPage('profile')" id="profile-nav-link" style="display:none;">个人中心</a></li>
-        <li><a onclick="showPage('admin')" id="admin-nav-link" style="display:none;">管理面板</a></li>
+        <li onclick="showPage('home')"><i class="fas fa-home"></i> 首页</li>
+        <li onclick="showPage('shop')"><i class="fas fa-store"></i> 商城</li>
+        <li onclick="showPage('team')"><i class="fas fa-users"></i> 团队</li>
+        <li id="profileNav" onclick="showPage('profile')" style="display:none;"><i class="fas fa-user"></i> 个人中心</li>
+        <li id="adminNav" onclick="showPage('admin')" style="display:none;"><i class="fas fa-shield-alt"></i> 管理面板</li>
     </ul>
-    <div class="auth-container">
-        <div id="login-area"><span class="auth-btn" onclick="openAuthModal('login')">登录</span><span class="auth-btn primary" onclick="openAuthModal('register')">注册</span></div>
-        <div id="user-area" class="user-greeting"><span>👋 <strong id="current-username"></strong></span><button class="logout-btn" onclick="logoutUser()">退出</button></div>
+    <div class="auth-buttons" id="unauthButtons">
+        <button class="btn btn-outline" onclick="openAuthModal('login')">登录</button>
+        <button class="btn btn-primary" onclick="openAuthModal('register')">注册</button>
+    </div>
+    <div id="authUserInfo" style="display:none; align-items:center; gap:15px;">
+        <span>👋 <span id="usernameDisplay"></span></span>
+        <button class="btn btn-outline" onclick="logout()">退出</button>
     </div>
 </nav>
-<div class="modal-overlay" id="authModal"><div class="auth-modal"><span class="close-modal" onclick="closeAuthModal()">×</span><h2 id="modal-title">登录</h2><div id="login-form"><div class="form-group"><label>用户名</label><input type="text" id="login-username"></div><div class="form-group"><label>密码</label><input type="password" id="login-password"></div><div class="form-group"><label><input type="checkbox" id="login-captcha"> 我不是机器人</label></div><div class="error-msg" id="login-error" style="color:#ff4d4d; display:none;"></div><button class="auth-submit-btn" onclick="loginUser()">登录</button><div class="auth-switch">没有账号？ <a onclick="switchAuthMode('register')">立即注册</a></div></div><div id="register-form" style="display:none;"><div class="form-group"><label>用户名</label><input type="text" id="reg-username"></div><div class="form-group"><label>密码</label><input type="password" id="reg-password"></div><div class="form-group"><label>确认密码</label><input type="password" id="reg-confirm"></div><div class="form-group"><label>邀请码</label><input type="text" id="reg-invite"></div><div class="form-group"><label><input type="checkbox" id="reg-captcha"> 我不是机器人</label></div><div class="error-msg" id="register-error" style="color:#ff4d4d; display:none;"></div><div class="success-msg" id="register-success" style="color:#4caf50; display:none;"></div><button class="auth-submit-btn" onclick="registerUser()">注册</button><div class="auth-switch">已有账号？ <a onclick="switchAuthMode('login')">去登录</a></div></div></div></div>
 
-<div id="home-page" class="page-section active"><div class="home-content"><h1 class="home-title">Grimward RolePlay</h1><p>洛圣都 · 硬核都市角色扮演服务器</p><p>5月30日 18:00 正式内测开启，无白名单直接进服</p><div><span id="beijing-time" class="beijing-time">🕒 北京时间加载中...</span><span id="online-count" class="online-count"><i class="fas fa-users"></i> 在线: <span id="online-number">0</span></span></div><br><button class="btn-primary" onclick="showPage('announcement')">查看内测公告</button></div></div>
-<div id="announcement-page" class="page-section"><div class="announce-container" style="max-width:800px; padding:20px;"><h1>内测公告</h1><p>内测期间数据会清档，公测后给予限定称号。邀请码：GRIMWARD2025</p></div></div>
-<div id="server-details-page" class="page-section"><div class="details-container"><h1>服务器状态</h1><p>当前在线人数: <span id="online-number-detail">0</span></p><p>总注册用户: <span id="total-users">0</span></p></div></div>
-<div id="rules-page" class="page-section"><div class="rules-container"><h1>规则与条例</h1><p>遵守角色扮演精神，禁止恶意破坏。</p></div></div>
-<div id="team-page" class="page-section"><div class="team-container"><h1>管理团队</h1><div id="team-grid" class="team-grid"></div></div></div>
-<div id="shop-page" class="page-section"><div class="shop-container"><h1>积分商城</h1><div>我的积分: <span id="shop-points-display">0</span></div><div id="shop-grid" class="shop-grid"></div><button class="btn-primary" onclick="topUp(100)">充值100积分(模拟)</button></div></div>
-<div id="profile-page" class="page-section"><div class="profile-container"><h1>个人中心</h1><div>用户名: <span id="profile-username"></span></div><div>积分: <span id="profile-points"></span></div><div>会员: <span id="profile-vip-status"></span></div><div>注册时间: <span id="profile-reg-date"></span></div><input type="text" id="redeem-code-input" placeholder="兑换码"><button onclick="redeemCode()">兑换</button></div></div>
-<div id="admin-page" class="page-section"><div class="admin-container"><h1>管理面板</h1><div id="admin-content">仅管理员可见</div></div></div>
+<!-- 页面 -->
+<div id="home" class="page active-page">
+    <div class="hero">
+        <h1>进入 Grimward 硬核都市</h1>
+        <p>洛圣都 · 角色扮演 · 无白名单内测</p>
+        <div class="stats">
+            <div class="stat-badge"><i class="fas fa-clock"></i> <span id="beijingTime"></span></div>
+            <div class="stat-badge"><i class="fas fa-users"></i> 在线 <span id="onlineCount">0</span></div>
+        </div>
+        <br>
+        <button class="btn btn-primary" onclick="showPage('shop')">进入商城</button>
+    </div>
+</div>
 
-<button class="chat-toggle" onclick="toggleChat()"><i class="fas fa-comment-dots"></i></button>
-<div class="chat-container" id="chat-container"><div class="chat-header" style="padding:10px; background:#2a2a2a;">社区聊天 <button onclick="toggleChat()" style="float:right; background:none; border:none; color:#fff;">✖</button></div><div class="chat-messages" id="chat-messages"></div><div class="chat-input-area"><input type="text" id="chat-input" placeholder="说点什么..."><button onclick="sendMessage()">发送</button></div></div>
+<div id="shop" class="page">
+    <h2><i class="fas fa-store"></i> 积分商城</h2>
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+        <p>⭐ 我的积分: <strong id="userPoints">0</strong></p>
+        <button class="btn btn-outline" onclick="rechargeSim(100)">模拟充值 +100</button>
+    </div>
+    <div id="shopItems" class="shop-grid"></div>
+</div>
+
+<div id="team" class="page">
+    <h2><i class="fas fa-users"></i> 管理团队</h2>
+    <div id="teamMembers" class="team-grid"></div>
+</div>
+
+<div id="profile" class="page">
+    <div class="card">
+        <h2><i class="fas fa-user-circle"></i> 个人中心</h2>
+        <p><strong>用户名：</strong> <span id="profileName">-</span></p>
+        <p><strong>积分：</strong> <span id="profilePoints">0</span></p>
+        <p><strong>会员状态：</strong> <span id="profileVip">普通用户</span></p>
+        <p><strong>注册时间：</strong> <span id="profileReg">-</span></p>
+        <hr style="margin: 20px 0; border-color:#2a2a33;">
+        <div style="display: flex; gap: 10px;">
+            <input type="text" id="redeemCodeInput" placeholder="兑换码">
+            <button class="btn btn-primary" onclick="redeemCode()">兑换</button>
+        </div>
+    </div>
+</div>
+
+<div id="admin" class="page">
+    <div class="card">
+        <h2><i class="fas fa-cogs"></i> 管理面板</h2>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap; margin: 20px 0;">
+            <button class="btn btn-primary" onclick="adminLoadUsers()">刷新用户</button>
+            <button class="btn btn-primary" onclick="adminLoadShopItems()">刷新商品</button>
+            <button class="btn btn-primary" onclick="showCreateRedeemModal()">生成兑换码</button>
+        </div>
+        <h3>用户列表</h3>
+        <div id="adminUserList" style="overflow-x: auto;"></div>
+        <h3 style="margin-top: 30px;">商品管理</h3>
+        <div id="adminShopList"></div>
+    </div>
+</div>
+
+<!-- 聊天 -->
+<div class="chat-float">
+    <div class="chat-toggle" onclick="toggleChat()"><i class="fas fa-comment-dots"></i></div>
+    <div class="chat-window" id="chatWindow">
+        <div class="chat-header">社区聊天 <span onclick="toggleChat()" style="cursor:pointer;">✖</span></div>
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input-area">
+            <input type="text" id="chatInput" placeholder="输入消息...">
+            <button class="btn btn-primary" onclick="sendMessage()">发送</button>
+        </div>
+    </div>
+</div>
+
+<!-- 模态框 -->
+<div id="authModal" class="modal">
+    <div class="modal-content">
+        <h3 id="modalTitle">登录</h3>
+        <input type="text" id="authUsername" placeholder="用户名">
+        <input type="password" id="authPassword" placeholder="密码">
+        <div id="inviteField" style="display:none;"><input type="text" id="inviteCode" placeholder="邀请码"></div>
+        <button id="authActionBtn" class="btn btn-primary" style="width:100%; margin-top:12px;">登录</button>
+        <p id="switchMode" style="text-align:center; margin-top:16px; cursor:pointer; color:#f97316;">没有账号？注册</p>
+    </div>
+</div>
+
+<div id="createRedeemModal" class="modal">
+    <div class="modal-content">
+        <h3>生成兑换码</h3>
+        <input type="text" id="newCode" placeholder="兑换码（留空自动生成）">
+        <input type="number" id="newPoints" placeholder="积分数量">
+        <button class="btn btn-primary" onclick="adminCreateRedeemCode()">生成</button>
+        <button class="btn btn-outline" onclick="closeModal('createRedeemModal')">取消</button>
+    </div>
+</div>
 
 <script>
-    const API_BASE = '';
+    // ========== Appwrite 配置 ==========
+    const PROJECT_ID = 'project-fra-6a253134002eedf53991';   // 替换成你的项目ID
+    const DATABASE_ID = 'database-6a2535df000a6c7d31a4';    // 替换成你的数据库ID
+    // 集合名称（请确保与你在Appwrite中创建的集合ID完全一致）
+    const COLLECTIONS = {
+        invites: 'invites',
+        shop_items: 'shop_items',
+        chat_messages: 'chat_messages',
+        team_members: 'team_members',
+        redeem_codes: 'redeem_codes'
+    };
+
+    const client = new Appwrite.Client();
+    client.setEndpoint('https://cloud.appwrite.io/v1').setProject(PROJECT_ID);
+    const account = new Appwrite.Account(client);
+    const databases = new Appwrite.Databases(client);
+
     let currentUser = null;
 
-    async function apiCall(endpoint, options = {}) {
-        const token = localStorage.getItem('token');
-        const headers = { 'Content-Type': 'application/json', ...options.headers };
-        if (token) headers['Authorization'] = `Bearer ${token}`;
-        const res = await fetch(`${API_BASE}${endpoint}`, { ...options, headers });
-        if (!res.ok) {
-            const err = await res.json().catch(() => ({}));
-            throw new Error(err.error || '请求失败');
-        }
-        return res.json();
-    }
-
-    async function updateOnlineCount() {
+    // ========== 辅助函数 ==========
+    async function refreshCurrentUser() {
         try {
-            const data = await apiCall('/api/online/count');
-            document.getElementById('online-number').innerText = data.count || 0;
-            if (document.getElementById('online-number-detail')) document.getElementById('online-number-detail').innerText = data.count || 0;
-        } catch(e) {}
+            currentUser = await account.get();
+        } catch(e) {
+            currentUser = null;
+        }
+        updateUI();
     }
-    setInterval(updateOnlineCount, 5000);
-    updateOnlineCount();
 
+    function updateUI() {
+        const unauthDiv = document.getElementById('unauthButtons');
+        const authDiv = document.getElementById('authUserInfo');
+        const profileNav = document.getElementById('profileNav');
+        const adminNav = document.getElementById('adminNav');
+        if (currentUser) {
+            unauthDiv.style.display = 'none';
+            authDiv.style.display = 'flex';
+            document.getElementById('usernameDisplay').innerText = currentUser.name;
+            profileNav.style.display = 'block';
+            // 检查是否为管理员（自定义属性 is_admin）
+            const isAdmin = currentUser.prefs?.is_admin === true;
+            adminNav.style.display = isAdmin ? 'block' : 'none';
+            // 刷新积分显示
+            if (document.getElementById('userPoints')) {
+                document.getElementById('userPoints').innerText = currentUser.prefs?.points || 0;
+            }
+            if (document.getElementById('profilePoints')) {
+                document.getElementById('profilePoints').innerText = currentUser.prefs?.points || 0;
+                document.getElementById('profileName').innerText = currentUser.name;
+                document.getElementById('profileVip').innerText = currentUser.prefs?.is_vip ? '会员' : '普通用户';
+                document.getElementById('profileReg').innerText = currentUser.$createdAt ? new Date(currentUser.$createdAt).toLocaleString() : '-';
+            }
+        } else {
+            unauthDiv.style.display = 'flex';
+            authDiv.style.display = 'none';
+            profileNav.style.display = 'none';
+            adminNav.style.display = 'none';
+        }
+    }
+
+    // 初始化默认管理员账号（如果不存在）
+    async function ensureAdminAccount() {
+        try {
+            // 尝试用管理员凭据登录（如果没有则创建）
+            // 为了避免重复创建，先检查是否已有 admin 用户
+            const users = await account.listIdentities(); // 这个方法可能不返回所有用户，改用尝试登录方式
+            // 简单方法：直接尝试用 admin 登录，失败则创建
+            try {
+                await account.createEmailPasswordSession('admin@grimward.com', 'admin123');
+                // 登录成功，说明账号存在
+                await account.deleteSession('current'); // 退出当前会话
+            } catch (e) {
+                // 账号不存在，创建管理员
+                await account.create(Appwrite.ID.unique(), 'admin@grimward.com', 'admin123', 'admin');
+                // 登录新管理员
+                await account.createEmailPasswordSession('admin@grimward.com', 'admin123');
+                const adminUser = await account.get();
+                // 设置预fs：管理员权限、初始积分
+                await account.updatePrefs({ points: 99999, is_admin: true, is_vip: true });
+                await account.deleteSession('current');
+                console.log('默认管理员账号已创建：admin / admin123');
+            }
+        } catch(err) {
+            console.warn('管理员初始化失败', err);
+        }
+    }
+
+    // 北京时间
     function updateBeijingTime() {
         const now = new Date();
-        const beijing = new Date(now.getTime() + 8*3600*1000);
-        document.getElementById('beijing-time').innerHTML = `🕒 北京时间：${beijing.toLocaleString()}`;
+        const beijing = new Date(now.getTime() + 8 * 3600 * 1000);
+        document.getElementById('beijingTime').innerText = beijing.toLocaleString();
     }
     setInterval(updateBeijingTime, 1000);
     updateBeijingTime();
 
-    async function fetchCurrentUser() {
-        if (!localStorage.getItem('token')) return null;
-        try {
-            const user = await apiCall('/api/user/profile');
-            currentUser = user;
-            return user;
-        } catch(e) {
-            logoutUser();
-            return null;
+    // 在线人数（简单模拟）
+    async function updateOnlineCount() {
+        // 实际可用心跳集合，此处简化
+        const count = Math.floor(Math.random() * 30) + 5;
+        document.getElementById('onlineCount').innerText = count;
+    }
+    setInterval(updateOnlineCount, 10000);
+    updateOnlineCount();
+
+    // ========== 页面切换 ==========
+    function showPage(pageId) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
+        document.getElementById(pageId).classList.add('active-page');
+        if (pageId === 'shop' && currentUser) loadShopItems();
+        if (pageId === 'team') loadTeamMembers();
+        if (pageId === 'admin' && currentUser?.prefs?.is_admin) {
+            adminLoadUsers();
+            adminLoadShopItems();
         }
     }
 
-    async function loginUser() {
-        const username = document.getElementById('login-username').value.trim();
-        const password = document.getElementById('login-password').value;
-        const captcha = document.getElementById('login-captcha').checked;
-        if (!captcha) { showError('login-error', '请完成验证'); return; }
-        try {
-            const data = await apiCall('/api/auth/login', { method: 'POST', body: JSON.stringify({ username, password }) });
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('username', data.username);
-            await fetchCurrentUser();
-            closeAuthModal();
-            updateUI();
-            showPage('home');
-        } catch(e) { showError('login-error', e.message); }
-    }
-
-    async function registerUser() {
-        const username = document.getElementById('reg-username').value.trim();
-        const password = document.getElementById('reg-password').value;
-        const confirm = document.getElementById('reg-confirm').value;
-        const invite = document.getElementById('reg-invite').value.trim();
-        const captcha = document.getElementById('reg-captcha').checked;
-        if (!captcha) { showError('register-error', '请完成验证'); return; }
-        if (password !== confirm) { showError('register-error', '两次密码不一致'); return; }
-        try {
-            await apiCall('/api/auth/register', { method: 'POST', body: JSON.stringify({ username, password, inviteCode: invite }) });
-            showSuccess('register-success', '注册成功，请登录');
-            setTimeout(() => switchAuthMode('login'), 1500);
-        } catch(e) { showError('register-error', e.message); }
-    }
-
-    function logoutUser() {
-        localStorage.removeItem('token');
-        localStorage.removeItem('username');
-        currentUser = null;
-        updateUI();
-        showPage('home');
-    }
-
-    async function updateUI() {
-        const token = localStorage.getItem('token');
-        const loginArea = document.getElementById('login-area');
-        const userArea = document.getElementById('user-area');
-        const profileLink = document.getElementById('profile-nav-link');
-        const adminLink = document.getElementById('admin-nav-link');
-        if (token) {
-            const user = await fetchCurrentUser();
-            if (!user) return;
-            loginArea.style.display = 'none';
-            userArea.classList.add('visible');
-            document.getElementById('current-username').innerText = user.username;
-            profileLink.style.display = 'inline';
-            if (user.is_admin) adminLink.style.display = 'inline';
-            document.getElementById('profile-username').innerText = user.username;
-            document.getElementById('profile-points').innerText = user.points;
-            document.getElementById('profile-vip-status').innerText = user.is_vip ? '会员' : '普通用户';
-            document.getElementById('profile-reg-date').innerText = user.reg_date || '-';
-            document.getElementById('shop-points-display').innerText = user.points;
-            await loadShopItems();
-            await loadTeamMembers();
-            await loadChatMessages();
-        } else {
-            loginArea.style.display = 'block';
-            userArea.classList.remove('visible');
-            profileLink.style.display = 'none';
-            adminLink.style.display = 'none';
-        }
-        await updateOnlineCount();
-    }
-
+    // ========== 商城 ==========
     async function loadShopItems() {
         try {
-            const items = await apiCall('/api/shop/items');
-            const grid = document.getElementById('shop-grid');
-            if (!grid) return;
-            grid.innerHTML = '';
-            for (const item of items) {
-                const btn = document.createElement('button');
-                btn.innerText = `购买 (${item.price}积分)`;
-                btn.className = 'btn-primary';
-                btn.onclick = () => buyItem(item.id);
-                const card = document.createElement('div');
-                card.className = 'shop-card';
-                card.innerHTML = `<h3>${item.name}</h3><p>${item.description}</p><p>库存: ${item.stock}</p>`;
-                card.appendChild(btn);
-                grid.appendChild(card);
+            const res = await databases.listDocuments(DATABASE_ID, COLLECTIONS.shop_items);
+            const container = document.getElementById('shopItems');
+            container.innerHTML = '';
+            for (let item of res.documents) {
+                container.innerHTML += `
+                    <div class="shop-card">
+                        <h3>${item.name}</h3>
+                        <p>${item.description || ''}</p>
+                        <div class="price-tag">💰 ${item.price} 积分</div>
+                        <div>库存: ${item.stock}</div>
+                        <button class="btn btn-primary" onclick="buyItem('${item.$id}', ${item.price})" style="margin-top:12px;">立即购买</button>
+                    </div>
+                `;
             }
         } catch(e) { console.error(e); }
     }
 
-    async function buyItem(itemId) {
-        try {
-            await apiCall('/api/shop/buy', { method: 'POST', body: JSON.stringify({ itemId }) });
-            alert('购买成功！');
-            await fetchCurrentUser();
-            await loadShopItems();
-            document.getElementById('shop-points-display').innerText = currentUser?.points || 0;
-        } catch(e) { alert(e.message); }
+    async function buyItem(itemId, price) {
+        if (!currentUser) { alert('请先登录'); return; }
+        let points = currentUser.prefs?.points || 0;
+        if (points < price) { alert('积分不足'); return; }
+        const item = await databases.getDocument(DATABASE_ID, COLLECTIONS.shop_items, itemId);
+        if (item.stock <= 0) { alert('已售罄'); return; }
+        // 扣积分
+        await account.updatePrefs({ points: points - price });
+        // 减库存
+        await databases.updateDocument(DATABASE_ID, COLLECTIONS.shop_items, itemId, { stock: item.stock - 1 });
+        alert('购买成功');
+        await refreshCurrentUser();
+        loadShopItems();
     }
 
-    async function topUp(points) {
-        alert('模拟充值：增加 ' + points + ' 积分（实际需对接支付）');
-        // 实际应调用充值API，这里简单演示
+    async function rechargeSim(amount) {
+        if (!currentUser) { alert('请先登录'); return; }
+        let points = currentUser.prefs?.points || 0;
+        await account.updatePrefs({ points: points + amount });
+        await refreshCurrentUser();
+        alert(`充值 ${amount} 积分成功`);
     }
 
-    async function redeemCode() {
-        const code = document.getElementById('redeem-code-input').value.trim();
-        if (!code) return;
-        try {
-            await apiCall('/api/user/redeem', { method: 'POST', body: JSON.stringify({ code }) });
-            alert('兑换成功！');
-            await fetchCurrentUser();
-            document.getElementById('profile-points').innerText = currentUser.points;
-            document.getElementById('shop-points-display').innerText = currentUser.points;
-        } catch(e) { alert(e.message); }
-    }
-
+    // ========== 团队 ==========
     async function loadTeamMembers() {
-        try {
-            const members = await apiCall('/api/team');
-            const grid = document.getElementById('team-grid');
-            if (grid) grid.innerHTML = members.map(m => `<div class="team-card"><img src="${m.avatar}" class="avatar" onerror="this.src='https://ui-avatars.com/api/?name=${m.name}'"><h3>${m.name}</h3><p>${m.role}</p></div>`).join('');
-        } catch(e) {}
-    }
-
-    async function loadChatMessages() {
-        try {
-            const msgs = await apiCall('/api/chat/messages');
-            const container = document.getElementById('chat-messages');
-            if (!container) return;
-            container.innerHTML = msgs.map(m => `<div class="chat-msg-item"><strong>${m.username}</strong> ${m.is_admin ? '[Admin]' : ''} <span style="font-size:12px;color:#888;">${m.timestamp}</span><div>${m.content}</div></div>`).join('');
-            container.scrollTop = container.scrollHeight;
-        } catch(e) {}
-    }
-
-    async function sendMessage() {
-        const input = document.getElementById('chat-input');
-        const content = input.value.trim();
-        if (!content) return;
-        try {
-            await apiCall('/api/chat/send', { method: 'POST', body: JSON.stringify({ content }) });
-            input.value = '';
-            await loadChatMessages();
-        } catch(e) { alert(e.message); }
-    }
-
-    function toggleChat() {
-        const container = document.getElementById('chat-container');
-        container.classList.toggle('open');
-        if (container.classList.contains('open')) loadChatMessages();
-    }
-
-    function showPage(page) {
-        document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
-        document.getElementById(page + '-page').classList.add('active');
-        if (page === 'shop' && currentUser) loadShopItems();
-        if (page === 'team') loadTeamMembers();
-        if (page === 'profile' && currentUser) fetchCurrentUser().then(() => updateUI());
-        if (page === 'admin') {
-            if (currentUser?.is_admin) document.getElementById('admin-content').innerHTML = '<p>管理员功能需在后端实现，当前仅展示。</p>';
-            else showPage('home');
+        const res = await databases.listDocuments(DATABASE_ID, COLLECTIONS.team_members);
+        const container = document.getElementById('teamMembers');
+        container.innerHTML = '';
+        for (let m of res.documents) {
+            container.innerHTML += `
+                <div class="card" style="text-align:center;">
+                    <img src="${m.avatar}" width="80" height="80" style="border-radius:50%; margin-bottom:10px;">
+                    <h3>${m.name}</h3>
+                    <p>${m.role}</p>
+                </div>
+            `;
         }
     }
 
-    function openAuthModal(mode) { document.getElementById('authModal').classList.add('open'); switchAuthMode(mode); }
-    function closeAuthModal() { document.getElementById('authModal').classList.remove('open'); }
-    function switchAuthMode(mode) {
-        if (mode === 'login') { document.getElementById('login-form').style.display = 'block'; document.getElementById('register-form').style.display = 'none'; document.getElementById('modal-title').innerText = '登录'; }
-        else { document.getElementById('login-form').style.display = 'none'; document.getElementById('register-form').style.display = 'block'; document.getElementById('modal-title').innerText = '注册'; }
+    // ========== 聊天 ==========
+    async function loadChatMessages() {
+        const res = await databases.listDocuments(DATABASE_ID, COLLECTIONS.chat_messages, [
+            Appwrite.Query.orderDesc('timestamp'),
+            Appwrite.Query.limit(50)
+        ]);
+        const messages = res.documents.reverse();
+        const container = document.getElementById('chatMessages');
+        container.innerHTML = '';
+        for (let msg of messages) {
+            container.innerHTML += `
+                <div class="message">
+                    <span class="name">${msg.username}</span><br>
+                    ${msg.content}
+                    <div style="font-size:10px; color:#aaa;">${new Date(msg.timestamp).toLocaleTimeString()}</div>
+                </div>
+            `;
+        }
+        container.scrollTop = container.scrollHeight;
     }
-    function showError(id, msg) { const el = document.getElementById(id); el.innerText = msg; el.style.display = 'block'; setTimeout(() => el.style.display = 'none', 3000); }
-    function showSuccess(id, msg) { const el = document.getElementById(id); el.innerText = msg; el.style.display = 'block'; setTimeout(() => el.style.display = 'none', 3000); }
 
-    (async function init() {
-        await updateUI();
-        setInterval(() => { if (localStorage.getItem('token')) updateOnlineCount(); }, 10000);
-        setInterval(() => { if (document.getElementById('chat-container').classList.contains('open')) loadChatMessages(); }, 5000);
+    async function sendMessage() {
+        if (!currentUser) { alert('请先登录'); return; }
+        const input = document.getElementById('chatInput');
+        const content = input.value.trim();
+        if (!content) return;
+        await databases.createDocument(DATABASE_ID, COLLECTIONS.chat_messages, Appwrite.ID.unique(), {
+            content: content,
+            userId: currentUser.$id,
+            username: currentUser.name,
+            timestamp: Date.now()
+        });
+        input.value = '';
+        loadChatMessages();
+    }
+
+    let chatOpen = false;
+    function toggleChat() {
+        const win = document.getElementById('chatWindow');
+        chatOpen = !chatOpen;
+        win.classList.toggle('open', chatOpen);
+        if (chatOpen) loadChatMessages();
+    }
+
+    // ========== 认证 ==========
+    let authMode = 'login';
+    function openAuthModal(mode) {
+        authMode = mode;
+        document.getElementById('modalTitle').innerText = mode === 'login' ? '登录' : '注册';
+        document.getElementById('inviteField').style.display = mode === 'register' ? 'block' : 'none';
+        document.getElementById('authActionBtn').innerText = mode === 'login' ? '登录' : '注册';
+        document.getElementById('switchMode').innerHTML = mode === 'login' ? '没有账号？注册' : '已有账号？登录';
+        document.getElementById('authModal').style.display = 'flex';
+        document.getElementById('authUsername').value = '';
+        document.getElementById('authPassword').value = '';
+        if (mode === 'register') document.getElementById('inviteCode').value = '';
+    }
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+    }
+    document.getElementById('switchMode').onclick = () => {
+        if (authMode === 'login') openAuthModal('register');
+        else openAuthModal('login');
+    };
+    document.getElementById('authActionBtn').onclick = async () => {
+        const username = document.getElementById('authUsername').value.trim();
+        const password = document.getElementById('authPassword').value;
+        if (!username || !password) { alert('请填写完整'); return; }
+        const email = `${username}@grimward.temp`;
+        if (authMode === 'login') {
+            try {
+                await account.createEmailPasswordSession(email, password);
+                await refreshCurrentUser();
+                closeModal('authModal');
+                alert('登录成功');
+                showPage('home');
+            } catch(e) {
+                alert('登录失败: ' + e.message);
+            }
+        } else {
+            const invite = document.getElementById('inviteCode').value.trim();
+            if (invite !== 'GRIMWARD2025') { alert('无效邀请码'); return; }
+            try {
+                await account.create(Appwrite.ID.unique(), email, password, username);
+                // 自动登录
+                await account.createEmailPasswordSession(email, password);
+                // 初始化预fs
+                await account.updatePrefs({ points: 100, is_admin: false, is_vip: false });
+                // 消耗邀请码（更新 invites 集合）
+                const invList = await databases.listDocuments(DATABASE_ID, COLLECTIONS.invites, [Appwrite.Query.equal('code', invite)]);
+                if (invList.documents.length > 0) {
+                    const doc = invList.documents[0];
+                    if (!doc.used_by) {
+                        await databases.updateDocument(DATABASE_ID, COLLECTIONS.invites, doc.$id, { used_by: username });
+                    }
+                }
+                await refreshCurrentUser();
+                closeModal('authModal');
+                alert('注册成功');
+                showPage('home');
+            } catch(e) {
+                alert('注册失败: ' + e.message);
+            }
+        }
+    };
+
+    async function logout() {
+        await account.deleteSession('current');
+        await refreshCurrentUser();
+        showPage('home');
+    }
+
+    // ========== 兑换码 ==========
+    async function redeemCode() {
+        if (!currentUser) { alert('请先登录'); return; }
+        const code = document.getElementById('redeemCodeInput').value.trim();
+        if (!code) return;
+        const res = await databases.listDocuments(DATABASE_ID, COLLECTIONS.redeem_codes, [Appwrite.Query.equal('code', code)]);
+        if (res.documents.length === 0) { alert('无效兑换码'); return; }
+        const redeemDoc = res.documents[0];
+        let usedList = redeemDoc.used_list || [];
+        if (usedList.includes(currentUser.name)) { alert('你已经使用过该兑换码'); return; }
+        // 加积分
+        let newPoints = (currentUser.prefs?.points || 0) + redeemDoc.points;
+        await account.updatePrefs({ points: newPoints });
+        usedList.push(currentUser.name);
+        await databases.updateDocument(DATABASE_ID, COLLECTIONS.redeem_codes, redeemDoc.$id, { used_list: usedList });
+        alert(`兑换成功，获得 ${redeemDoc.points} 积分`);
+        await refreshCurrentUser();
+        document.getElementById('redeemCodeInput').value = '';
+    }
+
+    // ========== 管理员功能 ==========
+    async function adminLoadUsers() {
+        // 注意：获取所有用户需要管理权限，Appwrite 默认需要 api key，此处简化演示仅显示当前用户列表不够
+        // 实际需要后端函数或更高权限，这里用 list 会失败，仅作示意。
+        // 为了演示，我们展示预置的几个用户（实际需用服务端 SDK，此处不展开）
+        const container = document.getElementById('adminUserList');
+        container.innerHTML = '<p>管理员功能需要更高权限配置，可后续通过 Appwrite Functions 实现完整管理。</p>';
+        // 简单展示当前用户
+        if (currentUser) {
+            container.innerHTML += `<div>当前登录: ${currentUser.name} (${currentUser.prefs?.is_admin ? '管理员' : '普通用户'})</div>`;
+        }
+    }
+    async function adminLoadShopItems() {
+        const res = await databases.listDocuments(DATABASE_ID, COLLECTIONS.shop_items);
+        const container = document.getElementById('adminShopList');
+        container.innerHTML = '<div style="display:flex; flex-direction:column; gap:8px;">';
+        for (let item of res.documents) {
+            container.innerHTML += `
+                <div style="display:flex; justify-content:space-between; align-items:center; background:#25252e; padding:10px; border-radius:16px;">
+                    <div><strong>${item.name}</strong> 价格:${item.price} 库存:${item.stock}</div>
+                    <button class="btn btn-danger" onclick="adminDeleteShopItem('${item.$id}')">删除</button>
+                </div>
+            `;
+        }
+        container.innerHTML += '</div>';
+    }
+    async function adminDeleteShopItem(itemId) {
+        if (!confirm('确定删除此商品？')) return;
+        await databases.deleteDocument(DATABASE_ID, COLLECTIONS.shop_items, itemId);
+        adminLoadShopItems();
+        loadShopItems();
+    }
+    function showCreateRedeemModal() {
+        document.getElementById('createRedeemModal').style.display = 'flex';
+    }
+    async function adminCreateRedeemCode() {
+        let code = document.getElementById('newCode').value.trim();
+        const points = parseInt(document.getElementById('newPoints').value);
+        if (!points || points <= 0) { alert('请输入有效积分数'); return; }
+        if (!code) {
+            code = 'CODE' + Math.random().toString(36).substring(2, 8).toUpperCase();
+        }
+        // 检查是否重复
+        const exist = await databases.listDocuments(DATABASE_ID, COLLECTIONS.redeem_codes, [Appwrite.Query.equal('code', code)]);
+        if (exist.documents.length > 0) { alert('兑换码已存在'); return; }
+        await databases.createDocument(DATABASE_ID, COLLECTIONS.redeem_codes, Appwrite.ID.unique(), {
+            code: code,
+            points: points,
+            used_list: []
+        });
+        alert(`兑换码 ${code} 已生成`);
+        closeModal('createRedeemModal');
+        document.getElementById('newCode').value = '';
+        document.getElementById('newPoints').value = '';
+    }
+
+    // ========== 启动 ==========
+    (async () => {
+        await ensureAdminAccount();
+        await refreshCurrentUser();
+        loadTeamMembers();
+        setInterval(() => {
+            if (currentUser) {
+                // 心跳更新在线（可选）
+            }
+        }, 30000);
     })();
 </script>
 </body>
